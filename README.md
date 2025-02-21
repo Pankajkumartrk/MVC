@@ -161,3 +161,86 @@
 	</servlet-mapping>
 
 </web-app>
+---------------------------- codebase mvc
+package com.cetpa.config;
+
+import java.util.Properties;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+
+@EnableWebMvc
+@Configuration
+@ComponentScan(basePackages = {"com.cetpa"})
+public class ServletConfig extends WebMvcConfigurerAdapter
+{
+	public void addResourceHandlers(ResourceHandlerRegistry registry) 
+	{
+	        registry.addResourceHandler("/CSS/**").addResourceLocations("/CSS/");
+	        registry.addResourceHandler("/JS/**").addResourceLocations("/JS/");
+	}
+	@Bean
+	public ViewResolver getViewResolver()
+	{
+		InternalResourceViewResolver rs=new InternalResourceViewResolver();
+		rs.setPrefix("/WEB-INF/pages/");
+		rs.setSuffix(".jsp");
+		return rs;
+	}
+	private DriverManagerDataSource getSource()
+	{
+		DriverManagerDataSource ds=new DriverManagerDataSource();
+		ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		ds.setUrl("jdbc:mysql://localhost/mvc4");
+		ds.setUsername("root");
+		ds.setPassword("mysql");
+		return ds;
+	}
+	@Bean
+	public LocalSessionFactoryBean getFactory()
+	{
+		System.out.println("Session factory created...");
+		LocalSessionFactoryBean factory=new LocalSessionFactoryBean();
+		factory.setDataSource(getSource());
+		factory.setHibernateProperties(getProperties());
+		factory.setPackagesToScan("com.cetpa.models");
+		return factory;
+	}
+	public Properties getProperties()
+	{
+		Properties p=new Properties();
+		p.put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
+		p.put("hibernate.hbm2ddl.auto","update");
+		p.put("hibernate.show_sql", true);
+		return p;
+	}
+}
+-------- webcong
+package com.cetpa.config;
+
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer 
+{
+	protected Class<?>[] getRootConfigClasses() 
+	{
+		return null;
+	}
+	protected Class<?>[] getServletConfigClasses() 
+	{
+		return new Class[] {ServletConfig.class};
+	}
+	protected String[] getServletMappings() 
+	{
+		return new String [] {"/"};
+	}
+}
+
